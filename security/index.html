@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Análisis de Seguridad Web (Checklist) | Vibecodingchile</title>
+  <meta name="description" content="Checklist y plantilla de informe para análisis responsable de seguridad web. Enfoque preventivo, sin explotación." />
+
+  <style>
+    :root{
+      --bg:#0b1020; --card:#111833; --text:#e9ecf5; --muted:#aab3d0;
+      --accent:#7aa2ff; --border:rgba(255,255,255,.10);
+      --good:#39d98a; --warn:#ffcc66; --bad:#ff5c7a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(900px 600px at 10% -10%, rgba(122,162,255,.25), transparent),
+                  radial-gradient(900px 600px at 90% 0%, rgba(57,217,138,.18), transparent),
+                  var(--bg);
+      color:var(--text); line-height:1.45;
+    }
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{max-width:1100px; margin:0 auto; padding:26px 18px 12px;}
+    h1{margin:0 0 6px; font-size:22px;}
+    .lead{margin:0; color:var(--muted); max-width:80ch;}
+    .wrap{max-width:1100px; margin:0 auto; padding:12px 18px 60px;}
+    .topbar{
+      display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      gap:10px; margin:14px 0;
+    }
+    .crumb{color:var(--muted); font-size:13px;}
+    .btn{
+      border:1px solid var(--border); background:rgba(122,162,255,.18); color:var(--text);
+      padding:10px 12px; border-radius:12px; cursor:pointer; display:inline-flex; gap:8px; align-items:center;
+    }
+    .btn:hover{background:rgba(122,162,255,.25)}
+    .btn.secondary{background:rgba(255,255,255,.06)}
+    .grid{display:grid; grid-template-columns:1fr; gap:14px;}
+    @media(min-width:980px){.grid{grid-template-columns:1.1fr .9fr;}}
+    .card{
+      background:rgba(17,24,51,.80); border:1px solid var(--border); border-radius:14px;
+      padding:14px; box-shadow:0 12px 30px rgba(0,0,0,.25); backdrop-filter: blur(6px);
+    }
+    .card h2{margin:0 0 10px; font-size:16px;}
+    label{font-size:12px; color:var(--muted); display:block; margin:0 0 6px;}
+    input[type="text"], input[type="url"], textarea, select{
+      width:100%; padding:10px; border-radius:10px; border:1px solid var(--border);
+      background:rgba(6,10,22,.55); color:var(--text); outline:none;
+    }
+    textarea{min-height:90px; resize:vertical;}
+    .row{display:grid; gap:10px; grid-template-columns:1fr;}
+    @media(min-width:720px){.row.two{grid-template-columns:1fr 1fr;}}
+    .small{font-size:12px; color:var(--muted);}
+    details{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(0,0,0,.10);}
+    summary{cursor:pointer; font-weight:600;}
+    .checklist{margin-top:10px; display:grid; gap:8px;}
+    .item{
+      display:flex; gap:10px; align-items:flex-start; padding:8px; border-radius:12px;
+      border:1px dashed rgba(255,255,255,.14);
+    }
+    .item input{margin-top:3px;}
+    .meta{font-size:12px; color:var(--muted); margin-top:2px;}
+    .badge{padding:3px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border);}
+    .b-good{color:var(--good)} .b-warn{color:var(--warn)} .b-bad{color:var(--bad)}
+    .actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;}
+    footer{max-width:1100px; margin:0 auto; padding:16px 18px; color:var(--muted); font-size:12px;}
+    .hr{height:1px; background:rgba(255,255,255,.08); margin:10px 0 14px;}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px;}
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Análisis de Seguridad Web (Checklist e Informe)</h1>
+    <p class="lead">
+      Plantilla para análisis preventivo y responsable (sin explotación). Útil para reportes legales-técnicos,
+      OWASP Top 10, y controles básicos de seguridad en sitios web.
+    </p>
+  </header>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="crumb">
+        <a href="../">Inicio</a> / <span>security</span>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn secondary" id="btnSave">Guardar en este navegador</button>
+        <button class="btn" id="btnExport">Exportar reporte (TXT)</button>
+        <button class="btn secondary" id="btnReset">Limpiar formulario</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Nota de uso (divulgación responsable)</h2>
+      <div class="small">
+        Este contenido es educativo y preventivo. No incluye instrucciones intrusivas, explotación ni PoC.
+        Si se requiere una evaluación profunda, se recomienda operar con autorización formal y reglas de compromiso
+        (Rules of Engagement / RoE).
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px;">
+      <section class="card">
+        <h2>1) Datos del análisis</h2>
+        <div class="row two">
+          <div>
+            <label for="target">Sitio/URL objetivo</label>
+            <input id="target" type="url" placeholder="https://ejemplo.cl" />
+          </div>
+          <div>
+            <label for="date">Fecha</label>
+            <input id="date" type="text" placeholder="YYYY-MM-DD" />
+          </div>
+        </div>
+
+        <div class="row two" style="margin-top:10px;">
+          <div>
+            <label for="scope">Alcance</label>
+            <input id="scope" type="text" placeholder="Público / No intrusivo / Revisión frontend, etc." />
+          </div>
+          <div>
+            <label for="method">Metodología</label>
+            <select id="method">
+              <option value="Observación pasiva (frontend)">Observación pasiva (frontend)</option>
+              <option value="Revisión de headers y configuración visible">Revisión de headers y configuración visible</option>
+              <option value="OWASP Top 10 (enfoque preventivo)">OWASP Top 10 (enfoque preventivo)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="summary">Resumen ejecutivo (lenguaje simple)</label>
+          <textarea id="summary" placeholder="Qué se observó, por qué importa, y riesgo potencial. Sin afirmaciones de explotación."></textarea>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>2) Checklist de hallazgos (orientativo)</h2>
+
+        <details open>
+          <summary>OWASP A01: Broken Access Control (Control de acceso roto)</summary>
+          <div class="checklist">
+            <div class="item">
+              <input type="checkbox" data-key="a01_1">
+              <div>
+                <div>Se observan endpoints o recursos que podrían depender de controles solo en frontend.</div>
+                <div class="meta">Riesgo: acceso fuera de contexto / enumeración si no hay validación backend.</div>
+              </div>
+            </div>
+            <div class="item">
+              <input type="checkbox" data-key="a01_2">
+              <div>
+                <div>Faltan señales de control por rol o autorización contextual (según evidencia visible).</div>
+                <div class="meta">Mitigación: autorización por servidor, control de roles, verificación contextual.</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>OWASP A02: Cryptographic Failures (Fallos criptográficos)</summary>
+          <div class="checklist">
+            <div class="item">
+              <input type="checkbox" data-key="a02_1">
+              <div>
+                <div>Falta de HTTPS, contenido mixto o configuraciones TLS débiles (si aplica).</div>
+                <div class="meta">Mitigación: HTTPS forzado, HSTS, TLS moderno.</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>OWASP A05: Security Misconfiguration (Mala configuración)</summary>
+          <div class="checklist">
+            <div class="item">
+              <input type="checkbox" data-key="a05_1">
+              <div>
+                <div>Faltan headers de seguridad visibles (CSP, X-Frame-Options, etc.).</div>
+                <div class="meta">Mitigación: configurar headers; revisar CSP.</div>
+              </div>
+            </div>
+            <div class="item">
+              <input type="checkbox" data-key="a05_2">
+              <div>
+                <div>Exposición de rutas, mensajes de error o información innecesaria.</div>
+                <div class="meta">Mitigación: reducir detalle de errores; ocultar banners.</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Controles operacionales mínimos</summary>
+          <div class="checklist">
+            <div class="item">
+              <input type="checkbox" data-key="ops_1">
+              <div>
+                <div>No hay indicios de rate limiting o mitigación ante automatización (visible).</div>
+                <div class="meta">Mitigación: rate limiting, captcha adaptativo, monitoreo y alertas.</div>
+              </div>
+            </div>
+            <div class="item">
+              <input type="checkbox" data-key="ops_2">
+              <div>
+                <div>No hay evidencia visible de logging/auditoría (no verificable desde frontend).</div>
+                <div class="meta">Mitigación: logging centralizado, retención, monitoreo.</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div style="margin-top:12px;">
+          <label for="evidence">Evidencias (sin datos personales)</label>
+          <textarea id="evidence" placeholder="Capturas (referencia), URLs públicas, headers observados, comportamiento visible. Evitar datos personales y pasos explotables."></textarea>
+          <div class="small">Recomendación: no incluir información sensible ni instrucciones de explotación.</div>
+        </div>
+
+        <div class="row two" style="margin-top:10px;">
+          <div>
+            <label for="severity">Severidad sugerida</label>
+            <select id="severity">
+              <option value="Baja">Baja</option>
+              <option value="Media">Media</option>
+              <option value="Alta">Alta</option>
+              <option value="Crítica">Crítica</option>
+            </select>
+            <div class="small">
+              Guía rápida: Baja (mejora), Media (riesgo plausible), Alta (impacto significativo), Crítica (impacto grave + alta probabilidad).
+            </div>
+          </div>
+          <div>
+            <label for="legal">Marco legal relacionado (Chile)</label>
+            <input id="legal" type="text" value="Ley N°19.628; Ley N°21.719; Constitución art. 19 N°4" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="reco">Recomendaciones (accionables)</label>
+          <textarea id="reco" placeholder="Lista de medidas concretas: autorización backend, minimización de datos, rate limiting, logging, headers de seguridad, monitoreo."></textarea>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>3) Plantilla de texto para reporte (copiable)</h2>
+        <div class="small">
+          Esta plantilla está pensada para reportar riesgos de forma responsable, sin afirmar explotación.
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="badge b-warn">Plantilla</div>
+        <pre class="mono" id="templateText" style="white-space:pre-wrap; margin-top:10px;"></pre>
+
+        <div class="actions">
+          <button class="btn secondary" id="btnCopy">Copiar plantilla</button>
+          <button class="btn secondary" id="btnFill">Actualizar plantilla con mis campos</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>4) Reglas de compromiso (RoE)</h2>
+        <div class="small">
+          Si se requiere análisis profundo, solicitar autorización formal y definir alcance, límites y salvaguardas.
+        </div>
+        <ul class="small">
+          <li>Alcance autorizado (URLs/hosts)</li>
+          <li>Técnicas permitidas / prohibidas</li>
+          <li>Ventana horaria</li>
+          <li>Contacto de emergencia</li>
+          <li>Formato de entrega de hallazgos</li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+
+  <footer>
+    Vibecodingchile · Plantilla de análisis preventivo (sin explotación). Úsese con divulgación responsable.
+  </footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const STORAGE_KEY = "vbc_security_checklist_v1";
+
+  const defaultTemplate = () => `
+REPORTE PREVENTIVO (Divulgación responsable)
+
+Sitio/URL: [URL]
+Fecha: [FECHA]
+Alcance: [ALCANCE]
+Metodología: [METODOLOGÍA]
+
+Resumen:
+[RESUMEN]
+
+Hallazgos (orientativo):
+- [LISTA DE ÍTEMS MARCADOS]
+
+Evidencias (sin datos personales / sin pasos explotables):
+[EVIDENCIAS]
+
+Severidad sugerida: [SEVERIDAD]
+Marco legal relacionado (Chile): [MARCO LEGAL]
+
+Recomendaciones:
+[RECOMENDACIONES]
+
+Nota:
+Este reporte no afirma explotación ni vulneración confirmada. El análisis fue no intrusivo y basado en observación de información pública. Para evaluación profunda se recomienda operar con autorización formal y Rules of Engagement (RoE).
+`.trim();
+
+  function getCheckedItems() {
+    const labels = [];
+    document.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
+      if (cb.checked) {
+        const text = cb.closest(".item")?.querySelector("div > div")?.textContent?.trim();
+        if (text) labels.push("- " + text);
+      }
+    });
+    return labels.length ? labels.join("\n") : "- (Sin ítems marcados)";
+  }
+
+  function fillTemplate() {
+    const tpl =
+`REPORTE PREVENTIVO (Divulgación responsable)
+
+Sitio/URL: ${$("target").value || "[URL]"}
+Fecha: ${$("date").value || "[FECHA]"}
+Alcance: ${$("scope").value || "[ALCANCE]"}
+Metodología: ${$("method").value || "[METODOLOGÍA]"}
+
+Resumen:
+${$("summary").value || "[RESUMEN]"}
+
+Hallazgos (orientativo):
+${getCheckedItems()}
+
+Evidencias (sin datos personales / sin pasos explotables):
+${$("evidence").value || "[EVIDENCIAS]"}
+
+Severidad sugerida: ${$("severity").value || "[SEVERIDAD]"}
+Marco legal relacionado (Chile): ${$("legal").value || "[MARCO LEGAL]"}
+
+Recomendaciones:
+${$("reco").value || "[RECOMENDACIONES]"}
+
+Nota:
+Este reporte no afirma explotación ni vulneración confirmada. El análisis fue no intrusivo y basado en observación de información pública. Para evaluación profunda se recomienda operar con autorización formal y Rules of Engagement (RoE).`;
+    $("templateText").textContent = tpl;
+  }
+
+  function saveState() {
+    const state = {
+      target: $("target").value,
+      date: $("date").value,
+      scope: $("scope").value,
+      method: $("method").value,
+      summary: $("summary").value,
+      evidence: $("evidence").value,
+      severity: $("severity").value,
+      legal: $("legal").value,
+      reco: $("reco").value,
+      checks: Array.from(document.querySelectorAll('input[type="checkbox"][data-key]'))
+        .map(cb => [cb.getAttribute("data-key"), cb.checked])
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function loadState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    try{
+      const state = JSON.parse(raw);
+      $("target").value = state.target || "";
+      $("date").value = state.date || "";
+      $("scope").value = state.scope || "";
+      $("method").value = state.method || $("method").value;
+      $("summary").value = state.summary || "";
+      $("evidence").value = state.evidence || "";
+      $("severity").value = state.severity || $("severity").value;
+      $("legal").value = state.legal || $("legal").value;
+      $("reco").value = state.reco || "";
+      const map = new Map(state.checks || []);
+      document.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => {
+        const k = cb.getAttribute("data-key");
+        cb.checked = map.get(k) || false;
+      });
+    }catch(e){}
+  }
+
+  function resetAll() {
+    ["target","date","scope","summary","evidence","reco"].forEach(id => $(id).value = "");
+    $("method").selectedIndex = 0;
+    $("severity").selectedIndex = 0;
+    document.querySelectorAll('input[type="checkbox"][data-key]').forEach(cb => cb.checked = false);
+    saveState();
+    $("templateText").textContent = defaultTemplate();
+  }
+
+  function exportTxt() {
+    fillTemplate();
+    const text = $("templateText").textContent;
+    const blob = new Blob([text], {type: "text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reporte_seguridad_preventivo.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function copyTemplate() {
+    const text = $("templateText").textContent;
+    navigator.clipboard.writeText(text).catch(()=>{});
+  }
+
+  // Wire events
+  $("btnFill").addEventListener("click", () => { fillTemplate(); saveState(); });
+  $("btnSave").addEventListener("click", () => { saveState(); fillTemplate(); });
+  $("btnExport").addEventListener("click", () => { saveState(); exportTxt(); });
+  $("btnCopy").addEventListener("click", () => { copyTemplate(); });
+  $("btnReset").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); resetAll(); });
+
+  // Autosave
+  document.addEventListener("input", (e) => {
+    if (e.target.matches("input, textarea, select")) saveState();
+  });
+  document.addEventListener("change", (e) => {
+    if (e.target.matches('input[type="checkbox"][data-key]')) saveState();
+  });
+
+  // Init
+  loadState();
+  $("templateText").textContent = defaultTemplate();
+  fillTemplate();
+</script>
+</body>
+</html>
